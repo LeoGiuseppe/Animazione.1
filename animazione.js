@@ -1,13 +1,14 @@
 function startGame() {
     myGameArea.start();
    animatedObject.loadImages();
+   animatedObject.idle();
 }
 
 var myGameArea = {  
     canvas : document.createElement("canvas"),
     start : function() {
-        this.canvas.width = 480;
-        this.canvas.height = 270;
+        this.canvas.width = 1000;
+        this.canvas.height = 500;
         this.context = this.canvas.getContext("2d");
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
          this.interval = setInterval(updateGameArea, 20);
@@ -37,26 +38,32 @@ function updateGameArea() {
 }
 function moveup() {
  
-  animatedObject.y -= 30;
+  animatedObject.speedY = -10;
 }
 
 function movedown() {
   
-  animatedObject.y += 30;
+  animatedObject.speedY = 10;
 }
 
 function moveleft() {
   
-  animatedObject.x -= 30;
+  animatedObject.speedX = -10;
 }
 
 function moveright() {
  
-  animatedObject.x += 30;
+  animatedObject.speedX = 10;
 }
 function clearmove() {
     animatedObject.speedX = 0; 
     animatedObject.speedY = 0; 
+}
+
+function jump() {
+  if (animatedObject.y === animatedObject.groundLevel) {
+    animatedObject.speedY = -15;
+  }
 }
 
 
@@ -64,10 +71,12 @@ function clearmove() {
 var animatedObject = {
   speedX: 0,
   speedY: 0,
+  gravity: 0.5,
+  groundLevel: 420,
   width: 60,
   height: 60,
   x: 10,
-  y: 120,
+  y: 420,
   imageList: [], 
   contaFrame: 0, 
   actualFrame: 0, 
@@ -75,11 +84,24 @@ var animatedObject = {
   update: function() {
     this.x += this.speedX;
     this.y += this.speedY;
-    this.contaFrame++;
-    if (this.contaFrame == 50) {
-      this.contaFrame = 0;
-      this.actualFrame = (1 + this.actualFrame) % this.imageList.length;
+    
+    // Applica la gravità
+    if (this.y < this.groundLevel) {
+      this.speedY += this.gravity;
+    } else {
+      this.y = this.groundLevel;
+      this.speedY = 0;
+    }
+    
+    if (this.speedX !== 0 || this.speedY !== 0) {
+      this.contaFrame++;
+      if (this.contaFrame == 4) {
+        this.contaFrame = 0;
+        this.actualFrame = (1 + this.actualFrame) % this.imageList.length;
         this.image = this.imageList[this.actualFrame];
+      }
+    } else {
+      this.idle();
     }
   },
 
