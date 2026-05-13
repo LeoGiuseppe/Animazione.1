@@ -1,7 +1,6 @@
 function startGame() {
     myGameArea.start();
    animatedObject.loadImages();
-   animatedObject.idle();
 }
 
 var myGameArea = {  
@@ -12,6 +11,23 @@ var myGameArea = {
         this.context = this.canvas.getContext("2d");
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
          this.interval = setInterval(updateGameArea, 20);
+         
+         // Controlli tastiera WASD
+         document.addEventListener('keydown', function(e) {
+           switch(e.key.toLowerCase()) {
+             case 'w': moveup(); break;
+             case 'a': moveleft(); break;
+             case 's': movedown(); break;
+             case 'd': moveright(); break;
+             case ' ': jump(); e.preventDefault(); break; // Previene scroll
+           }
+         });
+         
+         document.addEventListener('keyup', function(e) {
+           if (['w','a','s','d'].includes(e.key.toLowerCase())) {
+             clearmove();
+           }
+         });
       },
      draw: function(component) {
     this.context.fillStyle = component.color;
@@ -72,12 +88,14 @@ var animatedObject = {
   speedX: 0,
   speedY: 0,
   gravity: 0.5,
-  groundLevel: 420,
+  groundLevel: 440,
   width: 60,
   height: 60,
   x: 10,
   y: 420,
-  imageList: [], 
+  runImages: [], 
+  jumpImages: [],
+  idleImages: [],
   contaFrame: 0, 
   actualFrame: 0, 
 
@@ -85,42 +103,63 @@ var animatedObject = {
     this.x += this.speedX;
     this.y += this.speedY;
     
-    // Applica la gravità
-    if (this.y < this.groundLevel) {
-      this.speedY += this.gravity;
+    // Boundary checks
+    if (this.x < 0) this.x = 0;
+    if (this.x > myGameArea.canvas.width - this.width) this.x = myGameArea.canvas.width - this.width;
+    
+    // Scegli quale animazione usare
+    var currentImages;
+    if (this.y < this.groundLevel || this.speedY < 0) {
+      // In aria = salto
+      currentImages = this.jumpImages;
+    } else if (this.speedX !== 0) {
+      // In movimento = corsa
+      currentImages = this.runImages;
     } else {
-      this.y = this.groundLevel;
-      this.speedY = 0;
+      // Fermo = idle
+      currentImages = this.idleImages;
     }
     
-    if (this.speedX !== 0 || this.speedY !== 0) {
+    if (this.y < this.groundLevel) {
+            this.speedY += this.gravity;
+        } else {
+            this.y = this.groundLevel;
+            // Se tocchi terra mentre cadi, fermati
+            if (this.speedY > 0) this.speedY = 0; 
+        }
+
+    // Anima
+    if (currentImages.length > 0) {
       this.contaFrame++;
       if (this.contaFrame == 4) {
         this.contaFrame = 0;
-        this.actualFrame = (1 + this.actualFrame) % this.imageList.length;
-        this.image = this.imageList[this.actualFrame];
+        this.actualFrame = (this.actualFrame + 1) % currentImages.length;
+        this.image = currentImages[this.actualFrame];
       }
-    } else {
-      this.idle();
     }
   },
-
-  idle: function(){
-     this.image = new Image(this.width, this.height);
-    this.image.src = "https://i.ibb.co/4wG3nPHb/Idle-000.png";
-  },
-  
 
   loadImages: function() {
      for (imgPath of running) {
       var img = new Image(this.width, this.height);
       img.src = imgPath;
-      this.imageList.push(img);
-     
+      this.runImages.push(img);
     }
-    this.image = this.imageList[this.actualFrame];
+    for (imgPath of jumping) {
+      var img = new Image(this.width, this.height);
+      img.src = imgPath;
+      this.jumpImages.push(img);
+    }
+    for (imgPath of idle) {
+      var img = new Image(this.width, this.height);
+      img.src = imgPath;
+      this.idleImages.push(img);
+    }
+    this.image = this.idleImages[0];
   }
 };
+
+
 
 
 
