@@ -1,30 +1,50 @@
 function startGame() {
+    setTileSize();
     myGameArea.start();
-   animatedObject.loadImages();
+    animatedObject.loadImages();
+    animatedObject.resetPosition();
+    enemy.resetPosition();
 }
+
+function setTileSize() {
+    var maxWidth = window.innerWidth - 20;
+    var maxHeight = window.innerHeight - 20;
+    tileSize = Math.min(
+      Math.floor(maxWidth / map[0].length),
+      Math.floor(maxHeight / map.length)
+    );
+    if (tileSize < 20) tileSize = 20;
+}
+
 
 var myGameArea = {  
     canvas : document.createElement("canvas"),
     start : function() {
-        this.canvas.width = 1000;
-        this.canvas.height = 500;
+        this.canvas.width = map[0].length * tileSize;
+        this.canvas.height = map.length * tileSize;
         this.context = this.canvas.getContext("2d");
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
          this.interval = setInterval(updateGameArea, 20);
+         window.addEventListener('resize', function() {
+           setTileSize();
+           myGameArea.canvas.width = map[0].length * tileSize;
+           myGameArea.canvas.height = map.length * tileSize;
+           animatedObject.resetPosition();
+           enemy.resetPosition();
+         });
          
          // Controlli tastiera WASD
          document.addEventListener('keydown', function(e) {
            switch(e.key.toLowerCase()) {
-             case 'w': moveup(); break;
+             case 'w': jump(); break;
              case 'a': moveleft(); break;
-             case 's': movedown(); break;
              case 'd': moveright(); break;
              case ' ': jump(); e.preventDefault(); break; // Previene scroll
            }
          });
          
          document.addEventListener('keyup', function(e) {
-           if (['w','a','s','d'].includes(e.key.toLowerCase())) {
+           if (['a','d'].includes(e.key.toLowerCase())) {
              clearmove();
            }
          });
@@ -33,131 +53,98 @@ var myGameArea = {
     this.context.fillStyle = component.color;
     this.context.fillRect(component.x, component.y, component.width, component.height);
   },
+    drawMap: function() {
+        for (var r = 0; r < map.length; r++) { // r = riga
+            for (var c = 0; c < map[r].length; c++) { // c = colonna
+                if (map[r][c] === 1) {
+                    this.context.fillStyle = "#444"; // Colore dei blocchi
+                    this.context.fillRect(c * tileSize, r * tileSize, tileSize, tileSize);
+                }
+              }
+            }
+          },
   clear: function () {
     this.context.clearRect(0,0,this.canvas.width,this.canvas.height);
   },
    drawGameObject: function(gameObject) {
-    this.context.drawImage(
-      gameObject.image,
-      gameObject.x,
-      gameObject.y,
-      gameObject.width,
-      gameObject.height
-    );
+    if (gameObject.image) {
+      this.context.save();
+      if (gameObject.facing < 0) {
+        this.context.translate(gameObject.x + gameObject.width, gameObject.y);
+        this.context.scale(-1, 1);
+        this.context.drawImage(
+          gameObject.image,
+          0,
+          0,
+          gameObject.width,
+          gameObject.height
+        );
+      } else {
+        this.context.drawImage(
+          gameObject.image,
+          gameObject.x,
+          gameObject.y,
+          gameObject.width,
+          gameObject.height
+        );
+      }
+      this.context.restore();
+    } else if (gameObject.color) {
+      this.context.fillStyle = gameObject.color;
+      this.context.fillRect(gameObject.x, gameObject.y, gameObject.width, gameObject.height);
+    }
+  },
+  drawHitbox: function(gameObject) {
+    this.context.strokeStyle = gameObject.invulnerable ? 'yellow' : 'red';
+    this.context.lineWidth = 2;
+    this.context.strokeRect(gameObject.x, gameObject.y, gameObject.width, gameObject.height);
+  },
+  drawLives: function() {
+    this.context.fillStyle = 'white';
+    this.context.font = '20px Arial';
+    this.context.fillText('Lives: ' + animatedObject.lives, 10, 30);
   }
+
 }
+
 
 function updateGameArea() {
      myGameArea.clear();
+     myGameArea.drawMap();
+     animatedObject.update();
+     enemy.update();
+     if (checkCollision(animatedObject, enemy) && !animatedObject.invulnerable) {
+       animatedObject.lives--;
+       animatedObject.invulnerable = true;
+       animatedObject.invulnerableTimer = 150; // 3 secondi a ~50 fps
+       if (animatedObject.lives <= 0) {
+         gameOver();
+       } else {
+         animatedObject.resetPosition();
+       }
+     }
     myGameArea.drawGameObject(animatedObject);
-  animatedObject.update();
-}
-function moveup() {
- 
-  animatedObject.speedY = -10;
-}
-
-function movedown() {
+    myGameArea.drawGameObject(enemy); // Disegna nemico come rettangolo per ora
+    // Visualizza hitbox
+    myGameArea.drawHitbox(animatedObject);
+    myGameArea.drawHitbox(enemy);
+    // Disegna vite
+    myGameArea.drawLives();
   
-  animatedObject.speedY = 10;
 }
 
-function moveleft() {
-  
-  animatedObject.speedX = -10;
+function checkCollision(obj1, obj2) {
+  return obj1.x < obj2.x + obj2.width &&
+         obj1.x + obj1.width > obj2.x &&
+         obj1.y < obj2.y + obj2.height &&
+         obj1.y + obj1.height > obj2.y;
 }
 
-function moveright() {
- 
-  animatedObject.speedX = 10;
+function gameOver() {
+  clearInterval(myGameArea.interval);
+  alert("Game Over");
+  window.close();
 }
-function clearmove() {
-    animatedObject.speedX = 0; 
-    animatedObject.speedY = 0; 
-}
-
-function jump() {
-  if (animatedObject.y === animatedObject.groundLevel) {
-    animatedObject.speedY = -15;
-  }
-}
-
-
-
-var animatedObject = {
-  speedX: 0,
-  speedY: 0,
-  gravity: 0.5,
-  groundLevel: 440,
-  width: 60,
-  height: 60,
-  x: 10,
-  y: 420,
-  runImages: [], 
-  jumpImages: [],
-  idleImages: [],
-  contaFrame: 0, 
-  actualFrame: 0, 
-
-  update: function() {
-    this.x += this.speedX;
-    this.y += this.speedY;
-    
-    // Boundary checks
-    if (this.x < 0) this.x = 0;
-    if (this.x > myGameArea.canvas.width - this.width) this.x = myGameArea.canvas.width - this.width;
-    
-    // Scegli quale animazione usare
-    var currentImages;
-    if (this.y < this.groundLevel || this.speedY < 0) {
-      // In aria = salto
-      currentImages = this.jumpImages;
-    } else if (this.speedX !== 0) {
-      // In movimento = corsa
-      currentImages = this.runImages;
-    } else {
-      // Fermo = idle
-      currentImages = this.idleImages;
-    }
-    
-    if (this.y < this.groundLevel) {
-            this.speedY += this.gravity;
-        } else {
-            this.y = this.groundLevel;
-            // Se tocchi terra mentre cadi, fermati
-            if (this.speedY > 0) this.speedY = 0; 
-        }
-
-    // Anima
-    if (currentImages.length > 0) {
-      this.contaFrame++;
-      if (this.contaFrame == 4) {
-        this.contaFrame = 0;
-        this.actualFrame = (this.actualFrame + 1) % currentImages.length;
-        this.image = currentImages[this.actualFrame];
-      }
-    }
-  },
-
-  loadImages: function() {
-     for (imgPath of running) {
-      var img = new Image(this.width, this.height);
-      img.src = imgPath;
-      this.runImages.push(img);
-    }
-    for (imgPath of jumping) {
-      var img = new Image(this.width, this.height);
-      img.src = imgPath;
-      this.jumpImages.push(img);
-    }
-    for (imgPath of idle) {
-      var img = new Image(this.width, this.height);
-      img.src = imgPath;
-      this.idleImages.push(img);
-    }
-    this.image = this.idleImages[0];
-  }
-};
 
 
 
