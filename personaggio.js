@@ -2,19 +2,27 @@ var animatedObject = {
   speedX: 0,
   speedY: 0,
   gravity: 0.5,
-  width: 40,
-  height: 40,
+  width: 64,
+  height: 64,
   x: 0,
   y: 0,
   facing: 1,
   runImages: [],
   jumpImages: [],
   idleImages: [],
+  attackImages: [],
+  jumpAttackImages: [],
+  hitImages: [],
   contaFrame: 0,
   actualFrame: 0,
   isGrounded: false,
   image: null,
   lives: 3,
+  attacking: false,
+  attackType: 'attack',
+  attackTimer: 0,
+  hitTimer: 0,
+  heartOverlayTimer: 200,
   invulnerable: false,
   invulnerableTimer: 0,
 
@@ -24,6 +32,37 @@ var animatedObject = {
       this.invulnerableTimer--;
       if (this.invulnerableTimer <= 0) {
         this.invulnerable = false;
+      }
+    }
+
+    if (this.heartOverlayTimer > 0) {
+      this.heartOverlayTimer--;
+    }
+
+    if (typeof keysPressed !== 'undefined') {
+      if (keysPressed.a || keysPressed.arrowleft) {
+        this.speedX = -10;
+        this.facing = -1;
+      } else if (keysPressed.d || keysPressed.arrowright) {
+        this.speedX = 10;
+        this.facing = 1;
+      } else {
+        this.speedX = 0;
+      }
+
+      if (jumpRequested) {
+        if (this.isGrounded) {
+          this.speedY = -15;
+          this.isGrounded = false;
+        }
+        jumpRequested = false;
+      }
+
+      if (attackRequested && this.attackTimer <= 0) {
+        this.attackTimer = 12;
+        this.attacking = true;
+        this.attackType = this.isGrounded ? 'attack' : 'jumpattack';
+        attackRequested = false;
       }
     }
 
@@ -86,8 +125,23 @@ var animatedObject = {
       this.isGrounded = true;
     }
 
+    if (this.attackTimer > 0) {
+      this.attackTimer--;
+      if (this.attackTimer === 0) {
+        this.attacking = false;
+      }
+    }
+
+    if (this.hitTimer > 0) {
+      this.hitTimer--;
+    }
+
     var currentImages;
-    if (!this.isGrounded) {
+    if (this.hitTimer > 0) {
+      currentImages = this.hitImages;
+    } else if (this.attackTimer > 0) {
+      currentImages = this.attackType === 'jumpattack' ? this.jumpAttackImages : this.attackImages;
+    } else if (!this.isGrounded) {
       currentImages = this.jumpImages;
     } else if (this.speedX !== 0) {
       currentImages = this.runImages;
@@ -125,6 +179,21 @@ var animatedObject = {
       img.src = imgPath;
       this.idleImages.push(img);
     }
+    for (var imgPath of attack) {
+      var img = new Image(this.width, this.height);
+      img.src = imgPath;
+      this.attackImages.push(img);
+    }
+    for (var imgPath of jumpattack) {
+      var img = new Image(this.width, this.height);
+      img.src = imgPath;
+      this.jumpAttackImages.push(img);
+    }
+    for (var imgPath of gettinghit) {
+      var img = new Image(this.width, this.height);
+      img.src = imgPath;
+      this.hitImages.push(img);
+    }
     this.image = this.idleImages[0];
   },
 
@@ -135,6 +204,7 @@ var animatedObject = {
     this.speedY = 0;
     this.facing = 1;
     this.isGrounded = true;
+    this.heartOverlayTimer = 200;
   }
 };
 

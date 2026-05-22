@@ -3,7 +3,9 @@ function startGame() {
     myGameArea.start();
     animatedObject.loadImages();
     animatedObject.resetPosition();
-    enemy.resetPosition();
+    enemies.forEach(function(enemy) {
+      enemy.resetPosition();
+    });
 }
 
 function setTileSize() {
@@ -30,7 +32,9 @@ var myGameArea = {
            myGameArea.canvas.width = map[0].length * tileSize;
            myGameArea.canvas.height = map.length * tileSize;
            animatedObject.resetPosition();
-           enemy.resetPosition();
+           enemies.forEach(function(enemy) {
+             enemy.resetPosition();
+           });
          });
          
          // Controlli tastiera WASD
@@ -99,6 +103,10 @@ var myGameArea = {
     this.context.lineWidth = 2;
     this.context.strokeRect(gameObject.x, gameObject.y, gameObject.width, gameObject.height);
   },
+  drawEnemy: function(enemy) {
+    this.context.fillStyle = enemy.color;
+    this.context.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+  },
   drawLives: function() {
     this.context.fillStyle = 'white';
     this.context.font = '20px Arial';
@@ -112,22 +120,32 @@ function updateGameArea() {
      myGameArea.clear();
      myGameArea.drawMap();
      animatedObject.update();
-     enemy.update();
-     if (checkCollision(animatedObject, enemy) && !animatedObject.invulnerable) {
-       animatedObject.lives--;
-       animatedObject.invulnerable = true;
-       animatedObject.invulnerableTimer = 150; // 3 secondi a ~50 fps
-       if (animatedObject.lives <= 0) {
-         gameOver();
-       } else {
+     enemies.forEach(function(enemy) {
+       enemy.update();
+     });
+
+     for (var i = 0; i < enemies.length; i++) {
+       if (checkCollision(animatedObject, enemies[i]) && !animatedObject.invulnerable) {
+         animatedObject.lives--;
+         animatedObject.invulnerable = true;
+         animatedObject.invulnerableTimer = 150; // 3 secondi a ~50 fps
          animatedObject.resetPosition();
+         break;
        }
      }
+
+     if (animatedObject.lives <= 0) {
+       gameOver();
+       return;
+     }
+
     myGameArea.drawGameObject(animatedObject);
-    myGameArea.drawGameObject(enemy); // Disegna nemico come rettangolo per ora
+    enemies.forEach(function(enemy) {
+      myGameArea.drawGameObject(enemy);
+      myGameArea.drawHitbox(enemy);
+    });
     // Visualizza hitbox
     myGameArea.drawHitbox(animatedObject);
-    myGameArea.drawHitbox(enemy);
     // Disegna vite
     myGameArea.drawLives();
   
