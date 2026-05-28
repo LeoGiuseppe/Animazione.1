@@ -160,8 +160,9 @@ var animatedObject = {
     }
 
     // ---- Confini del Mondo ----
-    var maxX = map[0].length * tileSize - this.width;
-    var maxY = map.length  * tileSize - this.height;
+    // Dentro animatedObject.update() in player.js o game.js
+var maxX = map[0].length * tileSize - this.width; // Assicurati che legga map[0].length
+var maxY = map.length * tileSize - this.height;
     if (this.x < 0)   this.x = 0;
     if (this.x > maxX) this.x = maxX;
     if (this.y < 0)   { this.y = 0; this.speedY = 0; }

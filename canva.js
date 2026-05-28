@@ -34,9 +34,11 @@ var myGameArea = {
   },
 
   // --------------------------------------------------
-  updateCamera: function () {
-    var maxX = map[0].length * tileSize - this.canvas.width;
-    var maxY = map.length    * tileSize - this.canvas.height;
+ 
+   // Dentro myGameArea.updateCamera() in canva.js
+updateCamera: function () {
+  var maxX = map[0].length * tileSize - this.canvas.width; // Deve usare map[0].length
+  var maxY = map.length    * tileSize - this.canvas.height;
     this.cameraX = animatedObject.x + animatedObject.width  / 2 - this.canvas.width  / 2;
     this.cameraY = animatedObject.y + animatedObject.height / 2 - this.canvas.height / 2;
     this.cameraX = Math.max(0, Math.min(maxX, this.cameraX));

@@ -42,10 +42,20 @@ function updateGameArea() {
       if (checkCollision(attackHitbox, enemy)) {
         enemy.lives--;
         enemy.hitCooldown = 20;
+        enemy.flashTimer = 10; // Attiva il flash visivo del knockback
+        
+        // ---- KNOCKBACK REALE (Il nemico indietreggia ma NON cambia direzione) ----
+        // Calcola da che lato si trova il giocatore rispetto al nemico per respingerlo indietro
+        var pushDirection = (animatedObject.x + animatedObject.width / 2 < enemy.x + enemy.width / 2) ? 1 : -1;
+        
+        // Sposta il nemico nella direzione della spinta senza toccare enemy.direction o enemy.facing
+        enemy.x += pushDirection * 25; // Spinta aumentata a 25 pixel per un effetto più evidente
+        
         if (enemy.lives <= 0) enemy.dead = true;
         continue;
       }
     }
+    
 
     if (checkCollision(animatedObject, enemy) && !animatedObject.invulnerable) {
       animatedObject.lives--;
@@ -59,7 +69,7 @@ function updateGameArea() {
       updateHeartsHUD();
       break;
     }
-  }
+
 
   if (animatedObject.lives <= 0) {
     clearInterval(myGameArea.interval);
@@ -67,12 +77,14 @@ function updateGameArea() {
     return;
   }
 
-  var finalBosses = enemies.slice(-2);
-  if (finalBosses.every(function (e) { return e.dead; }) && !window._won) {
+  // Modificato: Controlla solo l'ultimo nemico (il singolo Boss Finale)
+  var finalBoss = enemies[enemies.length - 1];
+  if (finalBoss.dead && !window._won) {
     window._won = true;
     clearInterval(myGameArea.interval);
     myGameArea.drawWin();
   }
+}
 }
 
 function setTileSize() {
@@ -89,10 +101,23 @@ function startGame() {
   animatedObject.originalHeight = Math.max(28, Math.floor(tileSize * 1.1));
   animatedObject.height = animatedObject.originalHeight;
   
-  enemies.forEach(function (e) {
-    e.width  = Math.max(24, Math.floor(tileSize));
-    e.height = Math.max(24, Math.floor(tileSize));
+
+  enemies.forEach(function (e, index) {
+    if (index === 18) {
+      // Mini Boss (Arena C1)
+      e.width  = Math.max(24, Math.floor(tileSize)) * 2;
+      e.height = Math.max(24, Math.floor(tileSize)) * 2;
+    } else if (index === enemies.length - 1) {
+      // L'ULTIMO nemico della lista è sempre il Final Boss, a prescindere dal numero totale
+      e.width  = Math.max(24, Math.floor(tileSize)) * 3;
+      e.height = Math.max(24, Math.floor(tileSize)) * 3;
+    } else {
+      // Tutti gli altri nemici comuni
+      e.width  = Math.max(24, Math.floor(tileSize));
+      e.height = Math.max(24, Math.floor(tileSize));
+    }
   });
+  
 
   myGameArea.start();
   animatedObject.loadImages();
@@ -105,5 +130,4 @@ function startGame() {
   initControls();
   showBanner('START — trova le Ancient Ruins!');
 }
-
 window.addEventListener('load', startGame);

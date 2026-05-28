@@ -2,7 +2,7 @@
 // Griglia di gioco modificata con spiragli verticali per passare tra le zone sopra/sotto.
 // Tile: 0 = vuoto, 1 = solido
 
-var MAP_W = 120;
+var MAP_W = 150; // <-- Aumentato da 120 a 150 per allargare la mappa complessiva
 var MAP_H = 36;
 
 function makeGrid(w, h, fill) {
@@ -109,27 +109,18 @@ fillRect(112, MAP_H - 20, 1, 10);
 fillRect(100, MAP_H - 13, 6, 1);
 fillRect(106, MAP_H - 16, 5, 1);
 
-// ---- FINAL BOSS ARENA (cols 113-119) ----
-fillRect(113, MAP_H - 8, 7, 1);
-fillRect(113, MAP_H - 22, 7, 1);
-fillRect(113, MAP_H - 22, 1, 12);   
-fillRect(119, MAP_H - 22, 1, 14);
-fillRect(114, MAP_H - 14, 5, 1);
+// ---- FINAL BOSS ARENA (Estesa massicciamente da colonna 100 a 150) ----
+fillRect(100, MAP_H - 8, 50, 1);     // Pavimento dell'arena allargato a 50 blocchi di lunghezza
+fillRect(100, MAP_H - 35, 50, 1);    // Soffitto dell'arena molto alto
+fillRect(149, MAP_H - 35, 1, 28);    // Nuovo muro di fine mappa riposizionato alla colonna 149
 
-// ---- STRUTTURE DI CONNESSIONE E DI PASSAGGIO ----
-fillRect(12, MAP_H - 20, 3, 1);      
-fillRect(7, MAP_H - 22, 1, 3);       
-fillRect(35, MAP_H - 8, 2, 1);       
-fillRect(80, MAP_H - 8, 2, 1);       
-
-// ---- SPIRAGLI E APERTURE VERTICALI TRA I PIANI ----
-// Rimuoviamo selettivamente alcuni blocchi solidi per permettere il passaggio verticale
-fillRect(8, MAP_H - 22, 2, 1, 0);   // Apertura tra START e Submerged Caves
-fillRect(45, MAP_H - 20, 3, 1, 0);  // Apertura tra Hub e l'area superiore (Starting Castrum)
-fillRect(45, MAP_H - 28, 3, 1, 0);  // Spiraglio ulteriore verso l'alto
-fillRect(68, MAP_H - 20, 2, 1, 0);  // Apertura nel soffitto del Research Lab verso i corridoi alti
+// Piattaforme fluttuanti all'interno della grande arena per sfruttare la verticalità
+fillRect(110, MAP_H - 16, 8, 1);     
+fillRect(125, MAP_H - 22, 10, 1);    
+fillRect(138, MAP_H - 14, 8, 1);     
 
 // ======================= ZONE DEFINITIONS =======================
+// Aggiorna i confini delle ultime zone per coprire le nuove colonne della mappa
 var zones = [
   { name: "START",             x1: 0,   x2: 14,  y1: MAP_H - 10, y2: MAP_H },
   { name: "Ancient Ruins",     x1: 14,  x2: 36,  y1: MAP_H - 22, y2: MAP_H },
@@ -139,12 +130,11 @@ var zones = [
   { name: "B2 Corridor",       x1: 56,  x2: 73,  y1: 0,          y2: MAP_H - 20 },
   { name: "Research Lab",      x1: 61,  x2: 81,  y1: MAP_H - 22, y2: MAP_H },
   { name: "High-Tech Hallway", x1: 73,  x2: 91,  y1: 0,          y2: MAP_H - 20 },
-  { name: "Optional Loop",     x1: 91,  x2: 113, y1: 0,          y2: MAP_H - 20 },
+  { name: "Optional Loop",     x1: 91,  x2: 100, y1: 0,          y2: MAP_H - 20 },
   { name: "Miniboss Arena",    x1: 81,  x2: 97,  y1: MAP_H - 22, y2: MAP_H },
-  { name: "High-Tech Lab",     x1: 97,  x2: 113, y1: MAP_H - 22, y2: MAP_H },
-  { name: "Final Boss Arena",  x1: 113, x2: 120, y1: MAP_H - 24, y2: MAP_H },
+  { name: "High-Tech Lab",     x1: 97,  x2: 100, y1: MAP_H - 22, y2: MAP_H },
+  { name: "Final Boss Arena",  x1: 100, x2: 150, y1: 0,          y2: MAP_H }, // Zona estesa fino a colonna 150
 ];
-
 var zoneColors = {
   'START':             '#2c3e50',
   'Ancient Ruins':     '#4a235a',

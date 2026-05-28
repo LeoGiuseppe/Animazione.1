@@ -177,7 +177,7 @@ var enemies = [
   createEnemy(86,  MAP_H - 29, '#212f3d', 3, -1,  4),
   createEnemy(93,  MAP_H - 29, '#78281f', 2,  1,  3),
   createEnemy(104, MAP_H - 29, '#78281f', 2, -1,  3),
-  createEnemy(85,  MAP_H - 9,  '#e74c3c', 1.5, 1, 10),
-  createEnemy(115, MAP_H - 9,  '#ffffff', 4,  1,  15),
-  createEnemy(118, MAP_H - 9,  '#000000', 4, -1,  15)
+  createEnemy(85,  MAP_H - 9,  '#e74c3c', 1.5, 1, 10), // Mini Boss
+ // L'ultimo nemico (il Boss) viene spostato dalla colonna 115 alla colonna 125
+  createEnemy(125, MAP_H - 9,  '#ffffff', 4,  1,  25)  // Unico Boss Finale
 ];
