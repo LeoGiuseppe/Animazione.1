@@ -1,10 +1,7 @@
 // ======================= GAME LOOP =======================
-// Loop principale, rilevamento collisioni attacco/nemici,
-// condizioni di vittoria e game over.
 
-// Restituisce l'hitbox d'attacco del giocatore (o null)
 function getAttackHitbox() {
-  if (animatedObject.attackTimer <= 0) return null;
+  if (animatedObject.attackTimer <= 0 || animatedObject.isMorphed) return null; // Non si attacca in modalità palla
   var aw = Math.max(20, Math.floor(animatedObject.width  * 0.9));
   var ah = Math.max(20, Math.floor(animatedObject.height * 0.7));
   var ax = animatedObject.facing > 0
@@ -14,7 +11,6 @@ function getAttackHitbox() {
   return { x: ax, y: ay, width: aw, height: ah };
 }
 
-// AABB semplice
 function checkCollision(a, b) {
   return a.x < b.x + b.width  &&
          a.x + a.width  > b.x &&
@@ -22,33 +18,26 @@ function checkCollision(a, b) {
          a.y + a.height > b.y;
 }
 
-// --------------------------------------------------
 function updateGameArea() {
   myGameArea.clear();
 
-  // Aggiorna logica
   animatedObject.update();
   enemies.forEach(function (e) { e.update(); });
   myGameArea.updateCamera();
 
-  // Disegna mondo
   myGameArea.drawMap();
   myGameArea.drawItems();
 
-  // Hitbox attacco
   var attackHitbox = getAttackHitbox();
   if (attackHitbox) myGameArea.drawAttackHitbox(attackHitbox);
 
-  // Disegna entità
   myGameArea.drawGameObject(animatedObject);
   enemies.forEach(function (enemy) { myGameArea.drawEnemy(enemy); });
 
-  // ---- Rilevamento colpi ----
   for (var i = 0; i < enemies.length; i++) {
     var enemy = enemies[i];
     if (enemy.dead) continue;
 
-    // Il giocatore colpisce il nemico
     if (attackHitbox && enemy.hitCooldown <= 0) {
       if (checkCollision(attackHitbox, enemy)) {
         enemy.lives--;
@@ -58,7 +47,6 @@ function updateGameArea() {
       }
     }
 
-    // Il nemico colpisce il giocatore
     if (checkCollision(animatedObject, enemy) && !animatedObject.invulnerable) {
       animatedObject.lives--;
       animatedObject.invulnerable      = true;
@@ -73,14 +61,12 @@ function updateGameArea() {
     }
   }
 
-  // ---- Game over ----
   if (animatedObject.lives <= 0) {
     clearInterval(myGameArea.interval);
     myGameArea.drawGameOver();
     return;
   }
 
-  // ---- Vittoria: ultimi 2 nemici (boss finali) tutti morti ----
   var finalBosses = enemies.slice(-2);
   if (finalBosses.every(function (e) { return e.dead; }) && !window._won) {
     window._won = true;
@@ -89,7 +75,6 @@ function updateGameArea() {
   }
 }
 
-// --------------------------------------------------
 function setTileSize() {
   var maxW = window.innerWidth  - 32;
   var maxH = window.innerHeight - 120;
@@ -98,11 +83,12 @@ function setTileSize() {
   ));
 }
 
-// --------------------------------------------------
 function startGame() {
   setTileSize();
   animatedObject.width  = Math.max(28, Math.floor(tileSize * 1.1));
-  animatedObject.height = Math.max(28, Math.floor(tileSize * 1.1));
+  animatedObject.originalHeight = Math.max(28, Math.floor(tileSize * 1.1));
+  animatedObject.height = animatedObject.originalHeight;
+  
   enemies.forEach(function (e) {
     e.width  = Math.max(24, Math.floor(tileSize));
     e.height = Math.max(24, Math.floor(tileSize));
@@ -117,7 +103,7 @@ function startGame() {
   updateAbilitiesHUD();
   updateHeartsHUD();
   initControls();
-  showBanner('START — find the Ancient Ruins!');
+  showBanner('START — trova le Ancient Ruins!');
 }
 
 window.addEventListener('load', startGame);

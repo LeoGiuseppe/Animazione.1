@@ -1,7 +1,5 @@
 // ======================= NEMICI =======================
-// Factory createEnemy() genera un nemico con fisica,
-// pattugliamento, animazione sprite e HP.
-// Il array enemies contiene tutti i nemici della mappa.
+// Modificato: Adesso carica correttamente le immagini e le textures per l'animazione grafica dei nemici.
 
 function createEnemy(startCol, startRow, color, spd, dir, lives) {
   lives = lives || 3;
@@ -29,13 +27,37 @@ function createEnemy(startCol, startRow, color, spd, dir, lives) {
     startCol:       startCol,
     startRow:       startRow,
     startDirection: dir,
+    homeZone:       null,
 
     // --------------------------------------------------
     update: function () {
       if (this.dead) return;
       if (this.hitCooldown > 0) this.hitCooldown--;
 
-      // Movimento orizzontale
+      if (!this.homeZone) {
+        var startTileX = Math.floor(this.x / tileSize);
+        var startTileY = Math.floor(this.y / tileSize);
+        for (var i = 0; i < zones.length; i++) {
+          var z = zones[i];
+          if (startTileX >= z.x1 && startTileX < z.x2 && startTileY >= z.y1 && startTileY < z.y2) {
+            this.homeZone = z;
+            break;
+          }
+        }
+      }
+
+      var nextX = this.x + this.speedX * this.direction;
+
+      if (this.homeZone) {
+        var nextTileLeft  = Math.floor(nextX / tileSize);
+        var nextTileRight = Math.floor((nextX + this.width) / tileSize);
+
+        if (nextTileLeft < this.homeZone.x1 || nextTileRight > this.homeZone.x2) {
+          this.direction *= -1;
+          this.facing = this.direction >= 0 ? 1 : -1;
+        }
+      }
+
       this.x += this.speedX * this.direction;
       this.facing = this.direction >= 0 ? 1 : -1;
 
@@ -46,39 +68,39 @@ function createEnemy(startCol, startRow, color, spd, dir, lives) {
 
       if (this.direction < 0) {
         if (isSolidTile(tr, lc) || isSolidTile(br, lc)) {
-          this.direction = 1;
           this.x = (lc + 1) * tileSize;
+          this.direction = 1;
         }
       } else if (this.direction > 0) {
         if (isSolidTile(tr, rc) || isSolidTile(br, rc)) {
-          this.direction = -1;
           this.x = rc * tileSize - this.width;
+          this.direction = -1;
         }
       }
 
-      // Gravità
       this.speedY += this.gravity;
       this.y += this.speedY;
+
       lc = Math.floor(this.x / tileSize);
       rc = Math.floor((this.x + this.width - 1) / tileSize);
+      tr = Math.floor(this.y / tileSize);
       br = Math.floor((this.y + this.height - 1) / tileSize);
-      if (isSolidTile(br, lc) || isSolidTile(br, rc)) {
-        this.y = br * tileSize - this.height;
-        this.speedY = 0;
+
+      if (this.speedY > 0) {
+        if (isSolidTile(br, lc) || isSolidTile(br, rc)) {
+          this.y = br * tileSize - this.height;
+          this.speedY = 0;
+        }
       }
 
-      // Bordi mappa
-      var maxX = map[0].length * tileSize - this.width;
-      if (this.x < 0)    { this.x = 0;    this.direction =  1; }
-      if (this.x > maxX) { this.x = maxX; this.direction = -1; }
-
-      // Animazione
-      if (this.runImages.length > 0) {
+      // Animazione dei frame dei nemici basata sulle immagini caricate
+      var imgs = this.runImages.length > 0 ? this.runImages : this.idleImages;
+      if (imgs && imgs.length > 0) {
         this.contaFrame++;
-        if (this.contaFrame === 7) {
-          this.contaFrame  = 0;
-          this.actualFrame = (this.actualFrame + 1) % this.runImages.length;
-          this.image       = this.runImages[this.actualFrame];
+        if (this.contaFrame === 6) {
+          this.contaFrame = 0;
+          this.actualFrame = (this.actualFrame + 1) % imgs.length;
+          this.image = imgs[this.actualFrame];
         }
       }
     },
@@ -86,17 +108,38 @@ function createEnemy(startCol, startRow, color, spd, dir, lives) {
     // --------------------------------------------------
     loadImages: function () {
       var self = this;
-      running.forEach(function (s) {
-        var img = new Image(self.width, self.height);
-        img.src = s;
-        self.runImages.push(img);
-      });
-      idle.forEach(function (s) {
-        var img = new Image(self.width, self.height);
-        img.src = s;
-        self.idleImages.push(img);
-      });
-      this.image = this.idleImages[0] || null;
+      
+      // Se sono definiti degli array specifici per i nemici in sprite.js li carichiamo
+      if (typeof runningEnemies !== 'undefined' && runningEnemies[self.color]) {
+        runningEnemies[self.color].forEach(function (s) {
+          var img = new Image(self.width, self.height);
+          img.src = s;
+          self.runImages.push(img);
+        });
+      } else if (typeof running !== 'undefined') {
+        // Fallback strutturato: carichiamo i frame di corsa standard se mancano texture dedicate
+        running.forEach(function (s) {
+          var img = new Image(self.width, self.height);
+          img.src = s;
+          self.runImages.push(img);
+        });
+      }
+
+      if (typeof idleEnemies !== 'undefined' && idleEnemies[self.color]) {
+        idleEnemies[self.color].forEach(function (s) {
+          var img = new Image(self.width, self.height);
+          img.src = s;
+          self.idleImages.push(img);
+        });
+      } else if (typeof idle !== 'undefined') {
+        idle.forEach(function (s) {
+          var img = new Image(self.width, self.height);
+          img.src = s;
+          self.idleImages.push(img);
+        });
+      }
+      
+      this.image = this.runImages[0] || this.idleImages[0] || null;
     },
 
     // --------------------------------------------------
@@ -109,32 +152,32 @@ function createEnemy(startCol, startRow, color, spd, dir, lives) {
       this.lives     = this.maxLives;
       this.dead      = false;
       this.hitCooldown = 0;
+      this.homeZone  = null; 
     }
   };
 }
 
 // ======================= LISTA NEMICI =======================
 var enemies = [
-  // Ancient Ruins — pattuglie lente
   createEnemy(16,  MAP_H - 9,  '#8e2020', 2,  1,  3),
   createEnemy(25,  MAP_H - 9,  '#8e2020', 2, -1,  3),
-
-  // Hub — guardie medie
   createEnemy(38,  MAP_H - 9,  '#1a5276', 3,  1,  4),
   createEnemy(50,  MAP_H - 9,  '#1a5276', 3, -1,  4),
-
-  // Research Lab
-  createEnemy(64,  MAP_H - 9,  '#1a6b3c', 2,  1,  3),
-  createEnemy(73,  MAP_H - 9,  '#1a6b3c', 2, -1,  3),
-
-  // Miniboss Arena — Sentinel Drone (veloci, più HP)
-  createEnemy(83,  MAP_H - 9,  '#7d3c98', 4,  1,  6),
-  createEnemy(88,  MAP_H - 9,  '#7d3c98', 4, -1,  6),
-
-  // High-Tech Lab
-  createEnemy(100, MAP_H - 9,  '#0e6655', 3,  1,  4),
-
-  // Final Boss Arena — Overmind Boss (2 istanze, molto HP)
-  createEnemy(115, MAP_H - 9,  '#922b21', 5,  1,  8),
-  createEnemy(115, MAP_H - 15, '#922b21', 4, -1,  8),
+  createEnemy(64,  MAP_H - 9,  '#196f3d', 2.5, 1, 4),
+  createEnemy(75,  MAP_H - 9,  '#196f3d', 2.5, -1, 4),
+  createEnemy(99,  MAP_H - 9,  '#7d6608', 3,  1,  5),
+  createEnemy(108, MAP_H - 9,  '#7d6608', 3, -1,  5),
+  createEnemy(3,   MAP_H - 23, '#5b2c6f', 2,  1,  3),
+  createEnemy(10,  MAP_H - 23, '#5b2c6f', 2, -1,  3),
+  createEnemy(39,  MAP_H - 29, '#111111', 2,  1,  3),
+  createEnemy(52,  MAP_H - 29, '#111111', 2, -1,  3),
+  createEnemy(58,  MAP_H - 29, '#7f8c8d', 3,  1,  3),
+  createEnemy(68,  MAP_H - 29, '#7f8c8d', 3, -1,  3),
+  createEnemy(75,  MAP_H - 29, '#212f3d', 3,  1,  4),
+  createEnemy(86,  MAP_H - 29, '#212f3d', 3, -1,  4),
+  createEnemy(93,  MAP_H - 29, '#78281f', 2,  1,  3),
+  createEnemy(104, MAP_H - 29, '#78281f', 2, -1,  3),
+  createEnemy(85,  MAP_H - 9,  '#e74c3c', 1.5, 1, 10),
+  createEnemy(115, MAP_H - 9,  '#ffffff', 4,  1,  15),
+  createEnemy(118, MAP_H - 9,  '#000000', 4, -1,  15)
 ];

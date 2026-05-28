@@ -1,5 +1,5 @@
 // ======================= MAP =======================
-// Griglia di gioco ispirata al layout Metroidvania 101
+// Griglia di gioco modificata con spiragli verticali per passare tra le zone sopra/sotto.
 // Tile: 0 = vuoto, 1 = solido
 
 var MAP_W = 120;
@@ -33,105 +33,101 @@ fillRect(0, MAP_H - 1, MAP_W, 1);
 
 // ---- START (cols 0-14) ----
 fillRect(0, MAP_H - 8, 14, 1);
-fillRect(0, MAP_H - 8, 1, 8);        // muro sinistro
-fillRect(3, MAP_H - 11, 6, 1);       // piattaforma bassa
-fillRect(6, MAP_H - 14, 6, 1);       // piattaforma alta
+fillRect(0, MAP_H - 8, 1, 6);        
+fillRect(3, MAP_H - 11, 6, 1);       
+fillRect(6, MAP_H - 14, 6, 1);       
 
 // ---- ANCIENT RUINS E1 (cols 14-35) ----
-// NOTE: rimosso il muro destra a col 35 per permettere il passaggio verso Hub
-fillRect(14, MAP_H - 8, 22, 1);      // pavimento zona
-fillRect(14, MAP_H - 8, 1, 8);       // muro sinistra
-// Col 35 NON ha più un muro — passaggio libero verso Hub
+fillRect(14, MAP_H - 8, 22, 1);      
+fillRect(14, MAP_H - 8, 1, 6);       
 fillRect(17, MAP_H - 12, 5, 1);
-fillRect(23, MAP_H - 16, 7, 1);      // piattaforma alta — Morph Ball item
+fillRect(23, MAP_H - 16, 7, 1);      
 fillRect(28, MAP_H - 12, 5, 1);
-fillRect(14, MAP_H - 20, 22, 1);     // soffitto parziale
+fillRect(14, MAP_H - 20, 22, 1);     
 
 // ---- SUBMERGED CAVES D1 (cols 0-14, area alta) ----
 fillRect(0, MAP_H - 22, 14, 1);
 fillRect(0, MAP_H - 22, 1, 14);
-fillRect(13, MAP_H - 22, 1, 7);
+fillRect(13, MAP_H - 22, 1, 5);     
 fillRect(4, MAP_H - 26, 8, 1);
 fillRect(4, MAP_H - 30, 6, 1);
 
 // ---- HUB (cols 36-60) ----
 fillRect(36, MAP_H - 8, 25, 1);
 fillRect(36, MAP_H - 20, 25, 1);
-fillRect(36, MAP_H - 20, 1, 12);
-fillRect(60, MAP_H - 20, 1, 12);
+fillRect(36, MAP_H - 20, 1, 10);    
+fillRect(60, MAP_H - 20, 1, 10);    
 fillRect(39, MAP_H - 13, 8, 1);
 fillRect(50, MAP_H - 13, 8, 1);
 fillRect(43, MAP_H - 17, 6, 1);
 
 // ---- STARTING CASTRUM A1 (cols 36-55, alto) ----
 fillRect(36, MAP_H - 28, 20, 1);
-fillRect(36, MAP_H - 28, 1, 8);
-fillRect(55, MAP_H - 28, 1, 8);
+fillRect(36, MAP_H - 28, 1, 6);     
+fillRect(55, MAP_H - 28, 1, 6);     
 fillRect(40, MAP_H - 32, 12, 1);
 
 // ---- B2 CORRIDOR (cols 56-72, alto) ----
 fillRect(56, MAP_H - 28, 17, 1);
-fillRect(56, MAP_H - 28, 1, 8);
-fillRect(72, MAP_H - 28, 1, 8);
+fillRect(56, MAP_H - 28, 1, 6);     
+fillRect(72, MAP_H - 28, 1, 6);     
 fillRect(59, MAP_H - 32, 8, 1);
 
 // ---- RESEARCH LAB B1 (cols 61-80) ----
-// NOTE: rimosso muro destra a col 80 per permettere passaggio verso Miniboss Arena
-fillRect(61, MAP_H - 8, 20, 1);      // pavimento zona
+fillRect(61, MAP_H - 8, 20, 1);      
 fillRect(61, MAP_H - 20, 20, 1);
-fillRect(61, MAP_H - 20, 1, 12);     // muro sinistra
-// Col 80 NON ha più un muro — passaggio libero verso Miniboss Arena
+fillRect(61, MAP_H - 20, 1, 10);    
 fillRect(64, MAP_H - 13, 7, 1);
 fillRect(73, MAP_H - 13, 5, 1);
 
 // ---- HIGH-TECH HALLWAY B3 (cols 73-90, alto) ----
 fillRect(73, MAP_H - 28, 18, 1);
-fillRect(73, MAP_H - 28, 1, 8);
-fillRect(90, MAP_H - 28, 1, 8);
+fillRect(73, MAP_H - 28, 1, 6);     
+fillRect(90, MAP_H - 28, 1, 6);     
 fillRect(76, MAP_H - 32, 10, 1);
 
 // ---- OPTIONAL LOOP B4 (cols 91-108, alto) ----
 fillRect(91, MAP_H - 28, 18, 1);
-fillRect(91, MAP_H - 28, 1, 8);
-fillRect(108, MAP_H - 28, 1, 8);
+fillRect(91, MAP_H - 28, 1, 6);     
+fillRect(108, MAP_H - 28, 1, 6);    
 fillRect(95, MAP_H - 32, 10, 1);
 fillRect(100, MAP_H - 35, 6, 1);
 
 // ---- MINIBOSS ARENA C1 (cols 81-96) ----
 fillRect(81, MAP_H - 8, 16, 1);
 fillRect(81, MAP_H - 20, 16, 1);
-fillRect(81, MAP_H - 20, 1, 12);
-fillRect(96, MAP_H - 20, 1, 12);
+fillRect(81, MAP_H - 20, 1, 10);    
+fillRect(96, MAP_H - 20, 1, 10);    
 fillRect(84, MAP_H - 13, 5, 1);
 fillRect(90, MAP_H - 13, 5, 1);
 
 // ---- HIGH-TECH LAB C2 (cols 97-112) ----
 fillRect(97, MAP_H - 8, 16, 1);
 fillRect(97, MAP_H - 20, 16, 1);
-fillRect(97, MAP_H - 20, 1, 12);
-fillRect(112, MAP_H - 20, 1, 12);
+fillRect(97, MAP_H - 20, 1, 10);    
+fillRect(112, MAP_H - 20, 1, 10);   
 fillRect(100, MAP_H - 13, 6, 1);
 fillRect(106, MAP_H - 16, 5, 1);
 
 // ---- FINAL BOSS ARENA (cols 113-119) ----
 fillRect(113, MAP_H - 8, 7, 1);
 fillRect(113, MAP_H - 22, 7, 1);
-fillRect(113, MAP_H - 22, 1, 14);
+fillRect(113, MAP_H - 22, 1, 12);   
 fillRect(119, MAP_H - 22, 1, 14);
 fillRect(114, MAP_H - 14, 5, 1);
 
-// ---- TUNNEL DI CONNESSIONE ----
-fillRect(12, MAP_H - 20, 3, 1);      // start → ruins (alto)
-fillRect(7, MAP_H - 22, 1, 3);       // submerged caves → ancient ruins
+// ---- STRUTTURE DI CONNESSIONE E DI PASSAGGIO ----
+fillRect(12, MAP_H - 20, 3, 1);      
+fillRect(7, MAP_H - 22, 1, 3);       
+fillRect(35, MAP_H - 8, 2, 1);       
+fillRect(80, MAP_H - 8, 2, 1);       
 
-// ---- PASSAGGI TRA ZONE (pavimento di transizione) ----
-// Passaggio Ancient Ruins → Hub (col 35-36, riga pavimento)
-// Nessun muro a col 35 e 36, il pavimento globale copre già MAP_H-1
-// ma il pavimento delle zone finisce a col 35 e inizia a col 36 — aggiunge tile di connessione
-fillRect(35, MAP_H - 8, 2, 1);       // raccordo pavimento Ruins-Hub
-
-// Passaggio Research Lab → Miniboss Arena (col 80-81)
-fillRect(80, MAP_H - 8, 2, 1);       // raccordo pavimento Lab-Miniboss
+// ---- SPIRAGLI E APERTURE VERTICALI TRA I PIANI ----
+// Rimuoviamo selettivamente alcuni blocchi solidi per permettere il passaggio verticale
+fillRect(8, MAP_H - 22, 2, 1, 0);   // Apertura tra START e Submerged Caves
+fillRect(45, MAP_H - 20, 3, 1, 0);  // Apertura tra Hub e l'area superiore (Starting Castrum)
+fillRect(45, MAP_H - 28, 3, 1, 0);  // Spiraglio ulteriore verso l'alto
+fillRect(68, MAP_H - 20, 2, 1, 0);  // Apertura nel soffitto del Research Lab verso i corridoi alti
 
 // ======================= ZONE DEFINITIONS =======================
 var zones = [
@@ -149,7 +145,6 @@ var zones = [
   { name: "Final Boss Arena",  x1: 113, x2: 120, y1: MAP_H - 24, y2: MAP_H },
 ];
 
-// Colori per zona (usati per colorare i tile)
 var zoneColors = {
   'START':             '#2c3e50',
   'Ancient Ruins':     '#4a235a',
@@ -165,7 +160,6 @@ var zoneColors = {
   'Final Boss Arena':  '#3a0000',
 };
 
-// Restituisce il colore del tile in base alla zona
 function getTileColor(c, r) {
   for (var i = 0; i < zones.length; i++) {
     var z = zones[i];
@@ -175,7 +169,6 @@ function getTileColor(c, r) {
   return '#3a3a3a';
 }
 
-// Tile solido? (solo tipo 1 — tipo 2 (gate) rimosso, non più usato)
 function isSolidTile(r, c) {
   return map[r] && map[r][c] === 1;
 }

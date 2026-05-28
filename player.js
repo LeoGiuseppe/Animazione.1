@@ -1,7 +1,5 @@
-
 // ======================= PLAYER =======================
-// Oggetto principale del giocatore: movimento, fisica,
-// collisioni con la mappa, animazione sprite, stati.
+// Modificato: Il tasto F ora gestisce unicamente la meccanica del Doppio Salto.
 
 var lastCheckpoint = null;
 
@@ -10,12 +8,12 @@ var animatedObject = {
   speedY: 0,
   gravity: 0.55,
   width: 40,
+  originalHeight: 40, 
   height: 40,
   x: 0,
   y: 0,
   facing: 1,
 
-  // Array sprite (popolati da loadImages)
   runImages:       [],
   jumpImages:      [],
   idleImages:      [],
@@ -23,13 +21,12 @@ var animatedObject = {
   jumpAttackImages:[],
   hitImages:       [],
 
-  // Frame corrente
   contaFrame:  0,
   actualFrame: 0,
   image:       null,
 
-  // Stato
   isGrounded:        false,
+  hasDoubleJumped:   false, // Tiene traccia se il doppio salto è già stato usato
   lives:             5,
   attacking:         false,
   attackType:        'attack',
@@ -38,20 +35,59 @@ var animatedObject = {
   heartOverlayTimer: 0,
   invulnerable:      false,
   invulnerableTimer: 0,
+  isMorphed:         false, 
 
   // --------------------------------------------------
   update: function () {
 
-    // Invulnerabilità dopo danno
     if (this.invulnerable) {
       this.invulnerableTimer--;
       if (this.invulnerableTimer <= 0) this.invulnerable = false;
     }
     if (this.heartOverlayTimer > 0) this.heartOverlayTimer--;
 
-    // ---- Input movimento ----
-    var baseSpeed = 5;
-    var jumpPower = playerAbilities.highJump ? -18 : -13;
+    // ---- ABILITÀ: MORPH BALL (Tasto R) ----
+    if (morphRequested) {
+      morphRequested = false;
+      if (playerAbilities.morphBall) {
+        if (!this.isMorphed) {
+          this.isMorphed = true;
+          var diff = this.originalHeight - 20;
+          this.height = 20;
+          this.y += diff; 
+          showBanner("Morph Ball Attiva! [R]");
+        } else {
+          var checkRow = Math.floor((this.y - (this.originalHeight - 20)) / tileSize);
+          var lc = Math.floor(this.x / tileSize);
+          var rc = Math.floor((this.x + this.width - 0.1) / tileSize);
+          
+          if (!isSolidTile(checkRow, lc) && !isSolidTile(checkRow, rc)) {
+            this.y -= (this.originalHeight - 20);
+            this.height = this.originalHeight;
+            this.isMorphed = false;
+            showBanner("Morph Ball Disattivata");
+          } else {
+            showBanner("Spazio insufficiente per rialzarsi!");
+          }
+        }
+      }
+    }
+
+    // ---- MECCANICA: DOPPIO SALTO (Tasto F) ----
+    if (skillRequested) {
+      skillRequested = false;
+      // Può essere eseguito solo in aria e una sola volta per salto
+      if (!this.isGrounded && !this.hasDoubleJumped && !this.isMorphed) {
+        var doubleJumpPower = playerAbilities.highJump ? -15 : -12.5;
+        this.speedY = doubleJumpPower; 
+        this.hasDoubleJumped = true; 
+        showBanner("Doppio Salto!");
+      }
+    }
+
+    // ---- Input Movimento ----
+    var baseSpeed = this.isMorphed ? 3 : 5; 
+    var jumpPower = playerAbilities.highJump ? -21 : -15.5;
 
     if (keysPressed['a'] || keysPressed['arrowleft']) {
       this.speedX = -baseSpeed;
@@ -64,23 +100,27 @@ var animatedObject = {
     }
 
     if (jumpRequested) {
-      if (this.isGrounded) { this.speedY = jumpPower; this.isGrounded = false; }
+      if (this.isGrounded && !this.isMorphed) { 
+        this.speedY = jumpPower; 
+        this.isGrounded = false; 
+      }
       jumpRequested = false;
     }
 
-    if (attackRequested && this.attackTimer <= 0) {
+    if (attackRequested && this.attackTimer <= 0 && !this.isMorphed) {
       this.attackTimer = 14;
       this.attacking   = true;
       this.attackType  = this.isGrounded ? 'attack' : 'jumpattack';
       attackRequested  = false;
     }
 
-    // ---- Movimento orizzontale + collisioni ----
+    // ---- STEP 1: MOVIMENTO E COLLISIONI ASSE X ----
     this.x += this.speedX;
+    
     var lc = Math.floor(this.x / tileSize);
-    var rc = Math.floor((this.x + this.width - 1) / tileSize);
+    var rc = Math.floor((this.x + this.width - 0.1) / tileSize);
     var tr = Math.floor(this.y / tileSize);
-    var br = Math.floor((this.y + this.height - 1) / tileSize);
+    var br = Math.floor((this.y + this.height - 0.1) / tileSize);
 
     if (this.speedX < 0) {
       if (isSolidTile(tr, lc) || isSolidTile(br, lc)) {
@@ -94,19 +134,21 @@ var animatedObject = {
       }
     }
 
-    // ---- Gravità + collisioni verticali ----
+    // ---- STEP 2: MOVIMENTO E COLLISIONI ASSE Y ----
     this.speedY += this.gravity;
     this.y += this.speedY;
+    
     lc = Math.floor(this.x / tileSize);
-    rc = Math.floor((this.x + this.width - 1) / tileSize);
+    rc = Math.floor((this.x + this.width - 0.1) / tileSize);
     tr = Math.floor(this.y / tileSize);
-    br = Math.floor((this.y + this.height - 1) / tileSize);
+    br = Math.floor((this.y + this.height - 0.1) / tileSize);
 
     if (this.speedY > 0) {
       if (isSolidTile(br, lc) || isSolidTile(br, rc)) {
         this.y = br * tileSize - this.height;
         this.speedY = 0;
         this.isGrounded = true;
+        this.hasDoubleJumped = false; // Resetta il doppio salto quando tocca terra
       } else {
         this.isGrounded = false;
       }
@@ -117,28 +159,23 @@ var animatedObject = {
       }
     }
 
-    // ---- Bordi mappa ----
+    // ---- Confini del Mondo ----
     var maxX = map[0].length * tileSize - this.width;
     var maxY = map.length  * tileSize - this.height;
     if (this.x < 0)   this.x = 0;
     if (this.x > maxX) this.x = maxX;
     if (this.y < 0)   { this.y = 0; this.speedY = 0; }
-    if (this.y > maxY){ this.y = maxY; this.speedY = 0; this.isGrounded = true; }
+    if (this.y > maxY){ this.y = maxY; this.speedY = 0; this.isGrounded = true; this.hasDoubleJumped = false; }
 
-    // ---- Timer attacco ----
     if (this.attackTimer > 0) {
       this.attackTimer--;
       if (this.attackTimer === 0) this.attacking = false;
     }
     if (this.hitTimer > 0) this.hitTimer--;
 
-    // ---- Raccolta item ----
     checkItemCollection(this);
+    detectZone(Math.floor((this.x + this.width/2) / tileSize), Math.floor((this.y + this.height/2) / tileSize));
 
-    // ---- Rilevamento zona ----
-    detectZone(Math.floor(this.x / tileSize), Math.floor(this.y / tileSize));
-
-    // ---- Animazione sprite ----
     var imgs;
     if      (this.hitTimer > 0)    imgs = this.hitImages;
     else if (this.attackTimer > 0) imgs = (this.attackType === 'jumpattack') ? this.jumpAttackImages : this.attackImages;
@@ -190,6 +227,9 @@ var animatedObject = {
     this.speedY = 0;
     this.facing = 1;
     this.isGrounded       = true;
+    this.hasDoubleJumped  = false;
+    this.isMorphed        = false;
+    this.height           = this.originalHeight;
     this.heartOverlayTimer = 200;
   }
 };
