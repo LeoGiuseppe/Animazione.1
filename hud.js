@@ -17,6 +17,18 @@ function updateHeartsHUD() {
   }
 }
 
+function updateStaminaHUD() {
+  var el = document.getElementById('stamina-hud');
+  if (!el) return;
+
+  var pct = Math.max(0, Math.min(1, animatedObject.stamina / animatedObject.maxStamina));
+  var label = animatedObject.slideCooldownTimer > 0 ? 'SLIDE COOLDOWN' : 'STAMINA';
+  var text  = Math.round(animatedObject.stamina) + ' / ' + animatedObject.maxStamina;
+  el.innerHTML = '<span class="label">' + label + '&nbsp;</span>' +
+    '<span class="stamina-text">' + text + '</span>' +
+    '<div class="stamina-bar"><div class="stamina-fill" style="width:' + Math.round(pct * 100) + '%"></div></div>';
+}
+
 // Aggiorna i badge abilità nell'HUD HTML
 function updateAbilitiesHUD() {
   var el = document.getElementById('abilities-hud');

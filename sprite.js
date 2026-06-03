@@ -64,3 +64,35 @@ var gettinghit = [
   "https://i.ibb.co/VcDc1x8X/Dead-005.png",
   "https://i.ibb.co/N6NMJM7V/Dead-006.png"
 ];
+var sliding=[
+  "https://i.ibb.co/N6hhVj9s/Sliding-000.png",
+  "https://i.ibb.co/N6hhVj9s/Slide-001.png",
+  "https://i.ibb.co/pjNgBdPJ/Slide-002.png",
+  "https://i.ibb.co/B2wvWLRJ/Slide-003.png",
+  "https://i.ibb.co/8CPr62g/Slide-004.png",
+  "https://i.ibb.co/S41cMwYh/Slide-005.png",
+  "https://i.ibb.co/PvdmcJp5/Slide-006.png",
+  "https://i.ibb.co/YFh4m4sd/Slide-007.png",
+  "https://i.ibb.co/qYNf7V3g/Slide-008.png",
+  "https://i.ibb.co/5Wbww4F8/Slide-009.png"
+];
+// ======================= SPRITES (ATTACK EFFECTS) =======================
+
+// Array globale che punta alle 6 immagini dell'animazione fendente
+var swordSlashImages = [
+  "https://i.ibb.co/VWP8yXbv/Alternative-2-01.png",
+"https://i.ibb.co/YFHSmSx0/Alternative-2-02.png",
+"https://i.ibb.co/SwYNcbJx/Alternative-2-03.png",
+"https://i.ibb.co/spgwdwXD/Alternative-2-04.png",
+"https://i.ibb.co/gFRfjMxK/Alternative-2-05.png",
+"https://i.ibb.co/DHdv4JkZ/Alternative-2-06.png"
+];
+
+// Array di Image precaricate per evitare sfarfallii in-game
+var slashFramesPreloaded = [];
+
+swordSlashImages.forEach(function(src) {
+  var img = new Image();
+  img.src = src;
+  slashFramesPreloaded.push(img);
+});

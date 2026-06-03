@@ -1,11 +1,12 @@
 // ======================= CONTROLLI =======================
 // Gestisce input da tastiera (WASD / frecce) e pulsanti speciali.
 
-var keysPressed    = {};
-var jumpRequested  = false;
+var keysPressed     = {};
+var jumpRequested   = false;
 var attackRequested = false;
+var slideRequested  = false;
 var morphRequested  = false;
-var skillRequested   = false;
+var skillRequested  = false;
 
 function initControls() {
 
@@ -22,14 +23,15 @@ function initControls() {
   document.addEventListener('keydown', function (e) {
     var k = e.key.toLowerCase();
     // Blocca scroll della pagina sui tasti di gioco
-    if (['w', 'arrowup', ' ', 'a', 'arrowleft', 'd', 'arrowright', 'e', 'r', 'f'].includes(k))
+    if (['w', 'arrowup', ' ', 'a', 'arrowleft', 'd', 'arrowright', 'l', 'k', 'r', 'f'].includes(k))
       e.preventDefault();
 
     keysPressed[k] = true;
 
-    if (k === 'w' || k === 'arrowup' || k === ' ') jumpRequested   = true;
-    if (k === 'e')                                 attackRequested = true;
-    if (k === 'r')                                 morphRequested  = true;
+    if (k === 'w' || k === 'arrowup' || k === ' ') jumpRequested    = true;
+    if (k === 'l')                                 slideRequested   = true;
+    if (k === 'k')                                 attackRequested  = true;
+    if (k === 'r')                                 morphRequested   = true;
     if (k === 'f')                                 skillRequested   = true;
   });
 

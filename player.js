@@ -31,6 +31,18 @@ var animatedObject = {
   attacking:         false,
   attackType:        'attack',
   attackTimer:       0,
+  sliding:           false,
+  slideTimer:        0,
+  slideDuration:     20,
+  slideSpeed:        8,
+  slideCooldownTimer: 0,
+  slideCooldownDuration: 40,
+  slideCooldownReductionAfterAttack: 20,
+  slideStaminaCost:  40,
+  maxStamina:        100,
+  stamina:           100,
+  staminaRegenRate:  0.25,
+  slideImages:       [],
   hitTimer:          0,
   heartOverlayTimer: 0,
   invulnerable:      false,
@@ -85,9 +97,27 @@ var animatedObject = {
       }
     }
 
-    // ---- Input Movimento ----
+    // ---- IMPOSTAZIONI DI BASE DEL MOVIMENTO ----
     var baseSpeed = this.isMorphed ? 3 : 5; 
     var jumpPower = playerAbilities.highJump ? -21 : -15.5;
+
+    // ---- MECCANICA: SLIDE (Tasto L) ----
+    if (slideRequested && this.slideTimer <= 0 && !this.isMorphed && this.isGrounded && !this.attacking && this.slideCooldownTimer <= 0 && this.stamina >= this.slideStaminaCost) {
+      this.slideTimer         = this.slideDuration;
+      this.sliding           = true;
+      this.invulnerable      = true;
+      this.invulnerableTimer = this.slideDuration;
+      var cooldownReduction = (this.attackTimer > 0 || this.attacking) ? this.slideCooldownReductionAfterAttack : 0;
+      this.slideCooldownTimer = Math.max(4, this.slideCooldownDuration - cooldownReduction);
+      this.stamina          -= this.slideStaminaCost;
+      this.speedX            = this.facing * Math.max(baseSpeed, this.slideSpeed);
+      showBanner("Slide!");
+    }
+    slideRequested = false;
+
+    if (this.slideCooldownTimer > 0) {
+      this.slideCooldownTimer--;
+    }
 
     if (keysPressed['a'] || keysPressed['arrowleft']) {
       this.speedX = -baseSpeed;
@@ -107,11 +137,19 @@ var animatedObject = {
       jumpRequested = false;
     }
 
-    if (attackRequested && this.attackTimer <= 0 && !this.isMorphed) {
+    if (attackRequested && this.attackTimer <= 0 && !this.isMorphed && !this.sliding) {
       this.attackTimer = 14;
       this.attacking   = true;
       this.attackType  = this.isGrounded ? 'attack' : 'jumpattack';
       attackRequested  = false;
+    }
+
+    if (this.slideTimer > 0) {
+      this.slideTimer--;
+      this.speedX = this.facing * Math.max(baseSpeed, this.slideSpeed);
+      if (this.slideTimer === 0) {
+        this.sliding = false;
+      }
     }
 
     // ---- STEP 1: MOVIMENTO E COLLISIONI ASSE X ----
@@ -174,15 +212,20 @@ var maxY = map.length * tileSize - this.height;
     }
     if (this.hitTimer > 0) this.hitTimer--;
 
+    if (this.stamina < this.maxStamina) {
+      this.stamina = Math.min(this.maxStamina, this.stamina + this.staminaRegenRate);
+    }
+
     checkItemCollection(this);
     detectZone(Math.floor((this.x + this.width/2) / tileSize), Math.floor((this.y + this.height/2) / tileSize));
 
     var imgs;
-    if      (this.hitTimer > 0)    imgs = this.hitImages;
-    else if (this.attackTimer > 0) imgs = (this.attackType === 'jumpattack') ? this.jumpAttackImages : this.attackImages;
-    else if (!this.isGrounded)     imgs = this.jumpImages;
-    else if (this.speedX !== 0)    imgs = this.runImages;
-    else                           imgs = this.idleImages;
+    if      (this.hitTimer > 0)            imgs = this.hitImages;
+    else if (this.slideTimer > 0)          imgs = this.slideImages;
+    else if (this.attackTimer > 0)         imgs = (this.attackType === 'jumpattack') ? this.jumpAttackImages : this.attackImages;
+    else if (!this.isGrounded)             imgs = this.jumpImages;
+    else if (this.speedX !== 0)            imgs = this.runImages;
+    else                                   imgs = this.idleImages;
 
     if (!this.image && this.idleImages.length > 0) this.image = this.idleImages[0];
 
@@ -211,6 +254,7 @@ var maxY = map.length * tileSize - this.height;
     load(idle,        this.idleImages);
     load(attack,      this.attackImages);
     load(jumpattack,  this.jumpAttackImages);
+    load(sliding,     this.slideImages);
     load(gettinghit,  this.hitImages);
     this.image = this.idleImages[0];
   },

@@ -22,6 +22,7 @@ function updateGameArea() {
   myGameArea.clear();
 
   animatedObject.update();
+  updateStaminaHUD();
   enemies.forEach(function (e) { e.update(); });
   myGameArea.updateCamera();
 
@@ -29,7 +30,49 @@ function updateGameArea() {
   myGameArea.drawItems();
 
   var attackHitbox = getAttackHitbox();
-  if (attackHitbox) myGameArea.drawAttackHitbox(attackHitbox);
+  
+  // ---- RENDERING DEL FENDENTE AZZURRO CON IMMAGINI PRECARICATE ----
+  if (attackHitbox) {
+    // Mappatura dinamica basata sul timer decrescente per calcolare il frame progressivo
+    var maxTimer   = 14;
+    var frameCount = (typeof slashFramesPreloaded !== 'undefined' ? slashFramesPreloaded.length : 6) || 6;
+    var progress   = Math.max(0, Math.min(1, (maxTimer - animatedObject.attackTimer) / maxTimer));
+    var frameIndex = Math.floor(progress * frameCount);
+    if (frameIndex >= frameCount) frameIndex = frameCount - 1;
+
+    // Pesca l'oggetto Image generato dai link i.ibb.co forniti in sprite.js
+    var currentSlashImg = typeof slashFramesPreloaded !== 'undefined' ? slashFramesPreloaded[frameIndex] : null;
+    var ctx = myGameArea.ctx;
+
+    if (currentSlashImg && currentSlashImg.complete && ctx) {
+      ctx.save();
+      ctx.translate(-myGameArea.cameraX, -myGameArea.cameraY);
+
+      // Bagliore di luce neon azzurra attorno al fendente
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = "rgba(0, 191, 255, 0.7)";
+
+      if (animatedObject.facing === -1) {
+        // Se il giocatore guarda a sinistra, specchia lo sprite sull'asse delle X
+        ctx.translate(attackHitbox.x + attackHitbox.width, attackHitbox.y);
+        ctx.scale(-1, 1);
+        ctx.drawImage(currentSlashImg, 0, 0, attackHitbox.width, attackHitbox.height);
+      } else {
+        // Se guarda a destra, disegno lineare standard
+        ctx.drawImage(currentSlashImg, attackHitbox.x, attackHitbox.y, attackHitbox.width, attackHitbox.height);
+      }
+      
+      ctx.restore();
+    } else if (ctx) {
+      // fallback semitrasparente solo se le immagini non sono ancora pronte
+      ctx.save();
+      ctx.translate(-myGameArea.cameraX, -myGameArea.cameraY);
+      ctx.fillStyle = "rgba(0, 191, 255, 0.15)";
+      ctx.fillRect(attackHitbox.x, attackHitbox.y, attackHitbox.width, attackHitbox.height);
+      ctx.restore();
+    }
+  }
+  // ---- FINE MECCANICA DI DISEGNO DELLO SLASH ----
 
   myGameArea.drawGameObject(animatedObject);
   enemies.forEach(function (enemy) { myGameArea.drawEnemy(enemy); });
@@ -42,21 +85,16 @@ function updateGameArea() {
       if (checkCollision(attackHitbox, enemy)) {
         enemy.lives--;
         enemy.hitCooldown = 20;
-        enemy.flashTimer = 10; // Attiva il flash visivo del knockback
+        enemy.flashTimer = 10; 
         
-        // ---- KNOCKBACK REALE (Il nemico indietreggia ma NON cambia direzione) ----
-        // Calcola da che lato si trova il giocatore rispetto al nemico per respingerlo indietro
         var pushDirection = (animatedObject.x + animatedObject.width / 2 < enemy.x + enemy.width / 2) ? 1 : -1;
-        
-        // Sposta il nemico nella direzione della spinta senza toccare enemy.direction o enemy.facing
-        enemy.x += pushDirection * 25; // Spinta aumentata a 25 pixel per un effetto più evidente
+        enemy.x += pushDirection * 25; 
         
         if (enemy.lives <= 0) enemy.dead = true;
         continue;
       }
     }
     
-
     if (checkCollision(animatedObject, enemy) && !animatedObject.invulnerable) {
       animatedObject.lives--;
       animatedObject.invulnerable      = true;
@@ -69,7 +107,7 @@ function updateGameArea() {
       updateHeartsHUD();
       break;
     }
-
+  }
 
   if (animatedObject.lives <= 0) {
     clearInterval(myGameArea.interval);
@@ -77,14 +115,12 @@ function updateGameArea() {
     return;
   }
 
-  // Modificato: Controlla solo l'ultimo nemico (il singolo Boss Finale)
   var finalBoss = enemies[enemies.length - 1];
-  if (finalBoss.dead && !window._won) {
+  if (finalBoss && finalBoss.dead && !window._won) {
     window._won = true;
     clearInterval(myGameArea.interval);
     myGameArea.drawWin();
   }
-}
 }
 
 function setTileSize() {
@@ -101,24 +137,19 @@ function startGame() {
   animatedObject.originalHeight = Math.max(28, Math.floor(tileSize * 1.1));
   animatedObject.height = animatedObject.originalHeight;
   
-
   enemies.forEach(function (e, index) {
     if (index === 18) {
-      // Mini Boss (Arena C1)
       e.width  = Math.max(24, Math.floor(tileSize)) * 2;
       e.height = Math.max(24, Math.floor(tileSize)) * 2;
     } else if (index === enemies.length - 1) {
-      // L'ULTIMO nemico della lista è sempre il Final Boss, a prescindere dal numero totale
       e.width  = Math.max(24, Math.floor(tileSize)) * 3;
       e.height = Math.max(24, Math.floor(tileSize)) * 3;
     } else {
-      // Tutti gli altri nemici comuni
       e.width  = Math.max(24, Math.floor(tileSize));
       e.height = Math.max(24, Math.floor(tileSize));
     }
   });
   
-
   myGameArea.start();
   animatedObject.loadImages();
   animatedObject.resetPosition();
