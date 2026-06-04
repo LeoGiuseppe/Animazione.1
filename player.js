@@ -28,6 +28,8 @@ var animatedObject = {
   isGrounded:        false,
   hasDoubleJumped:   false, // Tiene traccia se il doppio salto è già stato usato
   lives:             5,
+  baseDamage:        1,
+  damageMultiplier:  1,
   attacking:         false,
   attackType:        'attack',
   attackTimer:       0,
@@ -276,5 +278,7 @@ var maxY = map.length * tileSize - this.height;
     this.isMorphed        = false;
     this.height           = this.originalHeight;
     this.heartOverlayTimer = 200;
+    // reset temporanei (es. potenziamenti keyitem)
+    this.damageMultiplier = 1;
   }
 };

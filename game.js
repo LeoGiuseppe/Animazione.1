@@ -81,15 +81,29 @@ function updateGameArea() {
     var enemy = enemies[i];
     if (enemy.dead) continue;
 
-    if (attackHitbox && enemy.hitCooldown <= 0) {
+    if (attackHitbox && enemy.hitCooldown <= 0 && !enemy.invulnerable) {
       if (checkCollision(attackHitbox, enemy)) {
-        enemy.lives--;
-        enemy.hitCooldown = 20;
+        var dmg = (animatedObject.baseDamage || 1) * (animatedObject.damageMultiplier || 1);
+        enemy.lives -= dmg;
+        enemy.hitCooldown = 40;
+        enemy.invulnerable = true;
+        enemy.invulnerableTimer = 40;
         enemy.flashTimer = 10; 
         
         var pushDirection = (animatedObject.x + animatedObject.width / 2 < enemy.x + enemy.width / 2) ? 1 : -1;
         enemy.x += pushDirection * 25; 
-        
+
+        // Se è il boss finale: quando scende a metà vita, si potenzia e guarisce UNA VOLTA
+        if (i === enemies.length - 1) {
+          if (enemy.lives <= Math.floor(enemy.maxLives / 2) && !enemy.hasHealed) {
+            enemy.speedX = enemy.baseSpeed * 1.25;
+            enemy.lives = enemy.maxLives;
+            enemy.hasHealed = true;
+            enemy.invulnerable = true;
+            enemy.invulnerableTimer = 60;
+          }
+        }
+
         if (enemy.lives <= 0) enemy.dead = true;
         continue;
       }

@@ -113,8 +113,9 @@ updateCamera: function () {
     ctx.save();
     ctx.translate(-this.cameraX, -this.cameraY);
 
-    if (obj === animatedObject && animatedObject.invulnerable) {
-      ctx.globalAlpha = (Math.floor(animatedObject.invulnerableTimer / 5) % 2 === 0) ? 0.25 : 1;
+    if (obj.invulnerable) {
+      var t = obj.invulnerableTimer || 0;
+      ctx.globalAlpha = (Math.floor(t / 5) % 2 === 0) ? 0.25 : 1;
     }
 
     if (obj.facing < 0) {

@@ -8,6 +8,7 @@ function createEnemy(startCol, startRow, color, spd, dir, lives) {
     width: 36, height: 36,
     color: color,
     speedX: spd,
+    baseSpeed: spd,
     direction: dir,
     facing: dir >= 0 ? 1 : -1,
     speedY: 0,
@@ -22,6 +23,9 @@ function createEnemy(startCol, startRow, color, spd, dir, lives) {
     lives: lives,
     maxLives: lives,
     hitCooldown: 0,
+    invulnerable: false,
+    invulnerableTimer: 0,
+    hasHealed: false,
     dead: false,
 
     startCol:       startCol,
@@ -33,6 +37,10 @@ function createEnemy(startCol, startRow, color, spd, dir, lives) {
     update: function () {
       if (this.dead) return;
       if (this.hitCooldown > 0) this.hitCooldown--;
+      if (this.invulnerableTimer > 0) {
+        this.invulnerableTimer--;
+        if (this.invulnerableTimer <= 0) this.invulnerable = false;
+      }
 
       if (!this.homeZone) {
         var startTileX = Math.floor(this.x / tileSize);
@@ -152,6 +160,9 @@ function createEnemy(startCol, startRow, color, spd, dir, lives) {
       this.lives     = this.maxLives;
       this.dead      = false;
       this.hitCooldown = 0;
+      this.invulnerable = false;
+      this.invulnerableTimer = 0;
+      this.hasHealed = false;
       this.homeZone  = null; 
     }
   };
@@ -179,5 +190,5 @@ var enemies = [
   createEnemy(104, MAP_H - 29, '#78281f', 2, -1,  3),
   createEnemy(85,  MAP_H - 9,  '#e74c3c', 1.5, 1, 10), // Mini Boss
  // L'ultimo nemico (il Boss) viene spostato dalla colonna 115 alla colonna 125
-  createEnemy(125, MAP_H - 9,  '#ffffff', 4,  1,  25)  // Unico Boss Finale
+  createEnemy(125, MAP_H - 9,  '#ffffff', 2.5,  1,  25)  // Unico Boss Finale (velocità ridotta)
 ];
