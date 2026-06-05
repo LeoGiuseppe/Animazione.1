@@ -45,6 +45,9 @@ var animatedObject = {
   stamina:           100,
   staminaRegenRate:  0.25,
   slideImages:       [],
+  smokeImages:       [],
+  smokeFrame:        0,
+  smokeFrameTimer:   0,
   hitTimer:          0,
   heartOverlayTimer: 0,
   invulnerable:      false,
@@ -113,6 +116,7 @@ var animatedObject = {
       this.slideCooldownTimer = Math.max(4, this.slideCooldownDuration - cooldownReduction);
       this.stamina          -= this.slideStaminaCost;
       this.speedX            = this.facing * Math.max(baseSpeed, this.slideSpeed);
+      this.smokeFrame        = 0;
       showBanner("Slide!");
     }
     slideRequested = false;
@@ -149,9 +153,18 @@ var animatedObject = {
     if (this.slideTimer > 0) {
       this.slideTimer--;
       this.speedX = this.facing * Math.max(baseSpeed, this.slideSpeed);
+      if (this.smokeImages.length > 0) {
+        this.smokeFrameTimer++;
+        if (this.smokeFrameTimer >= 2) {
+          this.smokeFrameTimer = 0;
+          this.smokeFrame = (this.smokeFrame + 1) % this.smokeImages.length;
+        }
+      }
       if (this.slideTimer === 0) {
         this.sliding = false;
       }
+    } else {
+      this.smokeFrameTimer = 0;
     }
 
     // ---- STEP 1: MOVIMENTO E COLLISIONI ASSE X ----
@@ -257,6 +270,7 @@ var maxY = map.length * tileSize - this.height;
     load(attack,      this.attackImages);
     load(jumpattack,  this.jumpAttackImages);
     load(sliding,     this.slideImages);
+    load(smokeBlow,   this.smokeImages);
     load(gettinghit,  this.hitImages);
     this.image = this.idleImages[0];
   },

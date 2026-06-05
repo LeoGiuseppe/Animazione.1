@@ -118,6 +118,27 @@ updateCamera: function () {
       ctx.globalAlpha = (Math.floor(t / 5) % 2 === 0) ? 0.25 : 1;
     }
 
+    if (obj.sliding && obj.smokeImages && obj.smokeImages.length > 0) {
+      var smoke = obj.smokeImages[obj.smokeFrame % obj.smokeImages.length];
+      if (smoke && smoke.complete) {
+        var smokeW = Math.max(24, Math.min(48, obj.width * 0.9));
+        var smokeH = Math.max(18, Math.min(42, obj.height * 0.9));
+        var smokeX = obj.x + (obj.width - smokeW) / 2 + (obj.facing > 0 ? -smokeW * 0.35 : smokeW * 0.35);
+        var smokeY = obj.y + obj.height * 0.45;
+
+        ctx.save();
+        ctx.globalAlpha = 0.45;
+        if (obj.facing < 0) {
+          ctx.translate(smokeX + smokeW, smokeY);
+          ctx.scale(-1, 1);
+          ctx.drawImage(smoke, 0, 0, smokeW, smokeH);
+        } else {
+          ctx.drawImage(smoke, smokeX, smokeY, smokeW, smokeH);
+        }
+        ctx.restore();
+      }
+    }
+
     if (obj.facing < 0) {
       ctx.translate(obj.x + obj.width, obj.y);
       ctx.scale(-1, 1);
@@ -148,16 +169,7 @@ updateCamera: function () {
   },
 
   // --------------------------------------------------
-  // Hitbox d'attacco visiva (semitrasparente)
-  drawAttackHitbox: function (hb) {
-    var ctx = this.ctx;
-    ctx.save();
-    ctx.translate(-this.cameraX, -this.cameraY);
-    ctx.globalAlpha  = 0.3;
-    ctx.fillStyle    = '#f39c12';
-    ctx.fillRect(hb.x, hb.y, hb.width, hb.height);
-    ctx.restore();
-  },
+
 
   // --------------------------------------------------
   drawGameOver: function () {

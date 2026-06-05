@@ -76,6 +76,21 @@ var sliding=[
   "https://i.ibb.co/qYNf7V3g/Slide-008.png",
   "https://i.ibb.co/5Wbww4F8/Slide-009.png"
 ];
+
+var smokeBlow = [
+  "craftpix-net-333631-free-cartoon-smoke-effects-asset-pack/Smoke Blow/PNG/Smoke Blow_Frame_01.png",
+  "craftpix-net-333631-free-cartoon-smoke-effects-asset-pack/Smoke Blow/PNG/Smoke Blow_Frame_02.png",
+  "craftpix-net-333631-free-cartoon-smoke-effects-asset-pack/Smoke Blow/PNG/Smoke Blow_Frame_03.png",
+  "craftpix-net-333631-free-cartoon-smoke-effects-asset-pack/Smoke Blow/PNG/Smoke Blow_Frame_04.png",
+  "craftpix-net-333631-free-cartoon-smoke-effects-asset-pack/Smoke Blow/PNG/Smoke Blow_Frame_05.png",
+  "craftpix-net-333631-free-cartoon-smoke-effects-asset-pack/Smoke Blow/PNG/Smoke Blow_Frame_06.png",
+  "craftpix-net-333631-free-cartoon-smoke-effects-asset-pack/Smoke Blow/PNG/Smoke Blow_Frame_07.png",
+  "craftpix-net-333631-free-cartoon-smoke-effects-asset-pack/Smoke Blow/PNG/Smoke Blow_Frame_08.png",
+  "craftpix-net-333631-free-cartoon-smoke-effects-asset-pack/Smoke Blow/PNG/Smoke Blow_Frame_09.png",
+  "craftpix-net-333631-free-cartoon-smoke-effects-asset-pack/Smoke Blow/PNG/Smoke Blow_Frame_10.png",
+  "craftpix-net-333631-free-cartoon-smoke-effects-asset-pack/Smoke Blow/PNG/Smoke Blow_Frame_11.png",
+  "craftpix-net-333631-free-cartoon-smoke-effects-asset-pack/Smoke Blow/PNG/Smoke Blow_Frame_12.png"
+];
 // ======================= SPRITES (ATTACK EFFECTS) =======================
 
 // Array globale che punta alle 6 immagini dell'animazione fendente
